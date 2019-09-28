@@ -1,0 +1,36 @@
+version: "2"
+
+services:
+  ## Apache Container ###
+  apache:
+    container_name: ${CONTAINER_NAME}_apache
+    restart: always
+    image: ${CONTAINER_NAME}_apache:${APACHE_VERSION}
+    build:
+      context: ${PATH_HOST}/apache
+      args:
+        APACHE_VERSION: ${APACHE_VERSION}
+    ports:
+      - 80:80
+    volumes:
+      - ${PATH_HOST}/apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ${PATH_HOST}/apache/vhosts:/usr/local/apache2/conf/vhosts
+    volumes_from:
+      - php
+
+  ### PHP Container ###
+  php:
+    container_name: ${CONTAINER_NAME}_php
+    restart: always
+    image: ${CONTAINER_NAME}_php:${PHP_VERSION}-${DEBIAN_VERSION}
+    build:
+      context: ${PATH_HOST}/php
+      args:
+        PHP_VERSION: ${PHP_VERSION}
+        DEBIAN_VERSION: ${DEBIAN_VERSION}
+    expose:
+      - 9000
+    volumes:
+      - ../:/usr/local/apache2/htdocs
+      - ${PATH_HOST}/php/ini/php.ini:/usr/local/etc/php/php.ini:rw
+      - ${PATH_HOST}/php/ini/php-date.ini:/usr/local/etc/php/conf.d/date.ini:ro
